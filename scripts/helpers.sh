@@ -9,6 +9,15 @@ _RESURRECT_FILE_PATH=""
 
 d=$'\t'
 
+is_integer() {
+    local re='^[0-9]+$'
+    if ! [[ $1 =~ $re ]]; then
+        echo 0
+    else
+        echo 1
+    fi
+}
+
 # helper functions
 get_tmux_option() {
 	local option="$1"
@@ -112,8 +121,13 @@ _RESURRECT_DIR="$(resurrect_dir)"
 
 resurrect_file_path() {
 	if [ -z "$_RESURRECT_FILE_PATH" ]; then
-		local timestamp="$(date +"%Y%m%dT%H%M%S")"
-		echo "$(resurrect_dir)/${RESURRECT_FILE_PREFIX}_${timestamp}.${RESURRECT_FILE_EXTENSION}"
+        local session_name="$(tmux display-message -p '#S')"
+        if [ "$(is_integer session_name)" == '1' ]; then
+            local timestamp="$(date +"%Y%m%dT%H%M%S")"
+            echo "$(resurrect_dir)/${RESURRECT_FILE_PREFIX}_${timestamp}.${RESURRECT_FILE_EXTENSION}"
+        else
+            echo "$(resurrect_dir)/${RESURRECT_FILE_PREFIX}_${session_name}.${RESURRECT_FILE_EXTENSION}"
+        fi
 	else
 		echo "$_RESURRECT_FILE_PATH"
 	fi
